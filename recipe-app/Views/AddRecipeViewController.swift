@@ -19,6 +19,8 @@ class AddRecipeViewController: UIViewController, UIImagePickerControllerDelegate
     let contentView = UIView()
     let titleField = UITextField()
     let typePicker = UIPickerView()
+    let typePickerSpinner = UIActivityIndicatorView(style: .medium)
+    private var isTypeLoading = false
     let imageView = UIImageView()
     let pickImageButton = UIButton(type: .system)
     var ingredientFields: [UITextField] = []
@@ -43,33 +45,27 @@ class AddRecipeViewController: UIViewController, UIImagePickerControllerDelegate
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        if editingRecipe != nil {
-            setupUI()
-            prefillIfNeeded()
+        setupUI()
+        prefillIfNeeded()
+        if viewModel.recipeTypes.isEmpty {
+            isTypeLoading = true
+            typePicker.isHidden = true
+            typePickerSpinner.isHidden = false
+            typePickerSpinner.startAnimating()
             viewModel.loadTypes { [weak self] in
                 DispatchQueue.main.async {
+                    self?.isTypeLoading = false
+                    self?.typePickerSpinner.stopAnimating()
+                    self?.typePicker.isHidden = false
+                    self?.typePickerSpinner.isHidden = true
                     self?.typePicker.reloadAllComponents()
                 }
             }
-            return
-        }
-        if viewModel.recipeTypes.isEmpty {
-            view.addSubview(loadingIndicator)
-            loadingIndicator.center = view.center
-            loadingIndicator.startAnimating()
-            view.isUserInteractionEnabled = false
-            viewModel.loadTypes { [weak self] in
-                DispatchQueue.main.async {
-                    self?.loadingIndicator.stopAnimating()
-                    self?.loadingIndicator.removeFromSuperview()
-                    self?.view.isUserInteractionEnabled = true
-                    self?.setupUI()
-                    self?.prefillIfNeeded()
-                }
-            }
         } else {
-            setupUI()
-            prefillIfNeeded()
+            isTypeLoading = false
+            typePicker.isHidden = false
+            typePickerSpinner.isHidden = true
+            typePickerSpinner.stopAnimating()
         }
     }
 
@@ -157,13 +153,26 @@ class AddRecipeViewController: UIViewController, UIImagePickerControllerDelegate
         typeCard.snp.makeConstraints { make in
             make.top.equalTo(titleCard.snp.bottom).offset(20)
             make.left.right.equalToSuperview().inset(16)
+            make.height.equalTo(140)
         }
         typePicker.dataSource = self
         typePicker.delegate = self
         typeCard.addSubview(typePicker)
         typePicker.snp.makeConstraints { make in
-            make.edges.equalToSuperview().inset(8)
-            make.height.equalTo(80)
+            make.edges.equalToSuperview().inset(12)
+        }
+        // Add spinner in center of typeCard
+        typeCard.addSubview(typePickerSpinner)
+        typePickerSpinner.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        // Initial visibility
+        typePicker.isHidden = isTypeLoading
+        typePickerSpinner.isHidden = !isTypeLoading
+        if isTypeLoading {
+            typePickerSpinner.startAnimating()
+        } else {
+            typePickerSpinner.stopAnimating()
         }
 
         // Image Card
@@ -322,7 +331,6 @@ class AddRecipeViewController: UIViewController, UIImagePickerControllerDelegate
                 make.top.equalTo(saveButton.snp.bottom).offset(20)
                 make.left.right.equalToSuperview().inset(32)
                 make.height.equalTo(44)
-                make.bottom.equalToSuperview().offset(-32)
             }
         }
     }
