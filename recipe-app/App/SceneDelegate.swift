@@ -19,5 +19,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         window.rootViewController = navVC
         window.makeKeyAndVisible()
         self.window = window
+        // Present LoginViewController if not logged in
+        if !(AuthAPI.shared.isLoggedIn) {
+            let loginVC = LoginViewController()
+            loginVC.modalPresentationStyle = .fullScreen
+            navVC.present(loginVC, animated: false)
+        }
     }
 }

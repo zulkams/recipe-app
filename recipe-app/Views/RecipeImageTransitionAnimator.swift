@@ -1,3 +1,10 @@
+//
+//  RecipeImageTransitionAnimator.swift
+//  recipe-app
+//
+//  Created by Zul Kamal on 14/06/2025.
+//
+
 import UIKit
 
 class RecipeImageTransitionAnimator: NSObject, UIViewControllerAnimatedTransitioning {

@@ -1,3 +1,10 @@
+//
+//  RecipeTableViewCell.swift
+//  recipe-app
+//
+//  Created by Zul Kamal on 14/06/2025.
+//
+
 import UIKit
 
 class RecipeTableViewCell: UITableViewCell {
@@ -24,20 +31,21 @@ class RecipeTableViewCell: UITableViewCell {
     }
     
     private func setupCardView() {
-        cardView.backgroundColor = .secondarySystemBackground
+        cardView.backgroundColor = UIColor.systemGray6
         cardView.layer.cornerRadius = 14
         cardView.layer.masksToBounds = true
-        cardView.layer.borderColor = UIColor.separator.cgColor
-        cardView.layer.borderWidth = 1
-        // Remove shadow and accent
         contentView.addSubview(cardView)
-        cardView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            cardView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            cardView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            cardView.leftAnchor.constraint(equalTo: contentView.leftAnchor, constant: 16),
-            cardView.rightAnchor.constraint(equalTo: contentView.rightAnchor, constant: -16)
-        ])
+        // shadow
+        cardView.layer.shadowColor = UIColor.black.cgColor
+        cardView.layer.shadowOpacity = 0.15
+        cardView.layer.shadowOffset = CGSize(width: 0, height: 2)
+        cardView.layer.shadowRadius = 4
+        cardView.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(8)
+            make.bottom.equalToSuperview().inset(8)
+            make.left.equalToSuperview().offset(16)
+            make.right.equalToSuperview().inset(16)
+        }
     }
     
     private func setupImageView() {
@@ -48,13 +56,11 @@ class RecipeTableViewCell: UITableViewCell {
         recipeImageView.layer.borderColor = UIColor.separator.cgColor
         recipeImageView.layer.borderWidth = 1
         cardView.addSubview(recipeImageView)
-        recipeImageView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            recipeImageView.leftAnchor.constraint(equalTo: cardView.leftAnchor, constant: 12),
-            recipeImageView.centerYAnchor.constraint(equalTo: cardView.centerYAnchor),
-            recipeImageView.widthAnchor.constraint(equalToConstant: 52),
-            recipeImageView.heightAnchor.constraint(equalToConstant: 52)
-        ])
+        recipeImageView.snp.makeConstraints { make in
+            make.left.equalToSuperview().offset(12)
+            make.centerY.equalToSuperview()
+            make.width.height.equalTo(52)
+        }
     }
     
     private func setupLabels() {
@@ -63,30 +69,25 @@ class RecipeTableViewCell: UITableViewCell {
         titleLabel.textColor = .label
         titleLabel.numberOfLines = 1
         cardView.addSubview(titleLabel)
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: cardView.topAnchor, constant: 16),
-            titleLabel.leftAnchor.constraint(equalTo: recipeImageView.rightAnchor, constant: 14),
-            titleLabel.rightAnchor.constraint(equalTo: cardView.rightAnchor, constant: -16)
-        ])
+        titleLabel.snp.makeConstraints { make in
+            make.top.equalToSuperview().offset(16)
+            make.left.equalTo(recipeImageView.snp.right).offset(14)
+            make.right.equalToSuperview().inset(16)
+        }
         
-        // Type label as subtle pill
+        // Type label
         typeLabel.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         typeLabel.textColor = .secondaryLabel
-        typeLabel.backgroundColor = .systemFill
         typeLabel.textAlignment = .center
-        typeLabel.layer.cornerRadius = 9
-        typeLabel.layer.masksToBounds = true
         typeLabel.setContentHuggingPriority(.required, for: .vertical)
         cardView.addSubview(typeLabel)
-        typeLabel.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            typeLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 6),
-            typeLabel.leftAnchor.constraint(equalTo: recipeImageView.rightAnchor, constant: 14),
-            typeLabel.heightAnchor.constraint(equalToConstant: 18),
-            typeLabel.widthAnchor.constraint(greaterThanOrEqualToConstant: 44),
-            typeLabel.bottomAnchor.constraint(lessThanOrEqualTo: cardView.bottomAnchor, constant: -14)
-        ])
+        typeLabel.snp.makeConstraints { make in
+            make.top.equalTo(titleLabel.snp.bottom).offset(6)
+            make.left.equalTo(recipeImageView.snp.right).offset(14)
+            make.height.equalTo(18)
+            make.width.greaterThanOrEqualTo(44)
+            make.bottom.lessThanOrEqualToSuperview().inset(14)
+        }
     }
     
     func configure(with recipe: Recipe) {

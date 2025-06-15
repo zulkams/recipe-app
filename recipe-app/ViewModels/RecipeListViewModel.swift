@@ -1,3 +1,10 @@
+//
+//  RecipeListViewModel.swift
+//  recipe-app
+//
+//  Created by Zul Kamal on 14/06/2025.
+//
+
 import Foundation
 
 class RecipeListViewModel {
@@ -12,22 +19,35 @@ class RecipeListViewModel {
     var onDataChanged: (() -> Void)?
 
     init() {
-        loadData()
+        // Use async loadData in controller after init
     }
 
-    func loadData() {
-        recipeTypes = [allType] + DataManager.shared.loadRecipeTypes()
-        if selectedType == nil {
-            selectedType = allType
+    func loadData(completion: (() -> Void)? = nil) {
+        RecipeTypeAPI.shared.fetchRecipeTypes { [weak self] types in
+            guard let self = self else { return }
+            self.recipeTypes = [self.allType] + types
+            if self.selectedType == nil {
+                self.selectedType = self.allType
+            }
+            self.recipes = DataManager.shared.loadRecipes()
+            self.filterRecipes()
+            self.onDataChanged?()
+            completion?()
         }
-        recipes = DataManager.shared.loadRecipes()
-        filterRecipes()
-        onDataChanged?()
     }
 
     func filterRecipes() {
-        if let type = selectedType, type.id != allType.id {
-            filteredRecipes = recipes.filter { $0.type.id == type.id }
+        if let selectedType = selectedType, selectedType.id != allType.id {
+            filteredRecipes = recipes.filter { $0.type.id == selectedType.id }
+        } else {
+            filteredRecipes = recipes
+        }
+        onDataChanged?()
+    }
+    
+    func filterRecipes(with keyword: String?) {
+        if let keyword = keyword, !keyword.isEmpty {
+            filteredRecipes = recipes.filter { $0.title.localizedCaseInsensitiveContains(keyword) }
         } else {
             filteredRecipes = recipes
         }

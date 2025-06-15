@@ -9,11 +9,20 @@ import UIKit
 import SnapKit
 
 class ViewController: UIViewController, UINavigationControllerDelegate {
+    private func showLoadingIndicator() {
+        loadingIndicator.startAnimating()
+        loadingIndicator.isHidden = false
+    }
+    private func hideLoadingIndicator() {
+        loadingIndicator.stopAnimating()
+        loadingIndicator.isHidden = true
+    }
+    private let loadingIndicator = UIActivityIndicatorView(style: .large)
+
     // UI Components
     let tableView = UITableView()
     var addButton: UIBarButtonItem!
     var filterButton: UIBarButtonItem!
-    private var typePickerPopup: RecipeTypePickerPopup?
 
     // ViewModel
     let viewModel = RecipeListViewModel()
@@ -22,22 +31,51 @@ class ViewController: UIViewController, UINavigationControllerDelegate {
     var selectedDetailImageView: UIImageView?
 
     override func viewDidLoad() {
-        print("ViewController viewDidLoad: setting navigationController.delegate")
+        loadingIndicator.hidesWhenStopped = true
+        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(loadingIndicator)
+        NSLayoutConstraint.activate([
+            loadingIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            loadingIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
         super.viewDidLoad()
         title = "Recipes"
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
 
         setupUI()
         bindViewModel()
-        viewModel.loadData()
+        showLoadingIndicator()
+        view.isUserInteractionEnabled = false
+        viewModel.loadData { [weak self] in
+            DispatchQueue.main.async {
+                self?.hideLoadingIndicator()
+                self?.view.isUserInteractionEnabled = true
+                self?.tableView.reloadData()
+            }
+        }
         navigationController?.delegate = self
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        print("ViewController viewWillAppear: setting navigationController.delegate")
         navigationController?.delegate = self
     }
+
+    private let floatingLogoutButton: UIButton = {
+        let btn = UIButton(type: .system)
+        btn.setTitle("⎋", for: .normal)
+        btn.setTitleColor(.white, for: .normal)
+        btn.backgroundColor = .systemRed
+        btn.layer.cornerRadius = 28
+        btn.layer.shadowColor = UIColor.black.cgColor
+        btn.layer.shadowOpacity = 0.2
+        btn.layer.shadowOffset = CGSize(width: 0, height: 2)
+        btn.layer.shadowRadius = 4
+        btn.titleLabel?.font = UIFont.systemFont(ofSize: 28, weight: .bold)
+        btn.addTarget(nil, action: #selector(logoutTapped), for: .touchUpInside)
+        btn.translatesAutoresizingMaskIntoConstraints = false
+        return btn
+    }()
 
     private func setupUI() {
         // TableView
@@ -45,7 +83,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate {
         tableView.delegate = self
         tableView.register(RecipeTableViewCell.self, forCellReuseIdentifier: RecipeTableViewCell.identifier)
         tableView.separatorStyle = .none
-        tableView.backgroundColor = .white
+        tableView.backgroundColor = .systemBackground
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
@@ -57,6 +95,14 @@ class ViewController: UIViewController, UINavigationControllerDelegate {
         filterButton = UIBarButtonItem(title: "Filter", style: .plain, target: self, action: #selector(filterTapped))
         navigationItem.rightBarButtonItem = addButton
         navigationItem.leftBarButtonItem = filterButton
+
+        // Floating Logout Button
+        view.addSubview(floatingLogoutButton)
+        floatingLogoutButton.snp.makeConstraints { make in
+            make.width.height.equalTo(56)
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(24)
+            make.right.equalTo(view.safeAreaLayoutGuide.snp.right).inset(24)
+        }
     }
 
     private func bindViewModel() {
@@ -66,27 +112,41 @@ class ViewController: UIViewController, UINavigationControllerDelegate {
     }
 
     @objc private func filterTapped() {
-        let popup = RecipeTypePickerPopup()
-        popup.pickerView.dataSource = self
-        popup.pickerView.delegate = self
-        let idx: Int
-        if let selectedType = viewModel.selectedType,
-           let foundIdx = viewModel.recipeTypes.firstIndex(where: { $0.id == selectedType.id }) {
-            idx = foundIdx
-        } else {
-            idx = 0 // Default to 'All'
+        let sheetVC = RecipeTypePickerSheetViewController()
+        sheetVC.recipeTypes = viewModel.recipeTypes
+        sheetVC.selectedType = viewModel.selectedType
+        sheetVC.onApply = { [weak self] selectedType in
+            self?.viewModel.selectedType = selectedType
+            self?.viewModel.filterRecipes()
         }
-        popup.pickerView.selectRow(idx, inComponent: 0, animated: false)
+        sheetVC.onCancel = { }
+        sheetVC.modalPresentationStyle = .pageSheet
+        if let sheet = sheetVC.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(sheetVC, animated: true)
+    }
 
-        popup.onApply = { [weak self] selectedRow in
-            guard let self = self else { return }
-            self.viewModel.selectedType = self.viewModel.recipeTypes[selectedRow]
-            self.viewModel.filterRecipes()
-            self.tableView.reloadData()
+    @objc private func logoutTapped() {
+        floatingLogoutButton.isEnabled = false
+        floatingLogoutButton.alpha = 0.6
+        AuthAPI.shared.logout { [weak self] result in
+            DispatchQueue.main.async {
+                self?.floatingLogoutButton.isEnabled = true
+                self?.floatingLogoutButton.alpha = 1.0
+                switch result {
+                case .success:
+                    let loginVC = LoginViewController()
+                    loginVC.modalPresentationStyle = .fullScreen
+                    self?.present(loginVC, animated: true)
+                case .failure(let error):
+                    let alert = UIAlertController(title: "Logout Failed", message: error.localizedDescription, preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default))
+                    self?.present(alert, animated: true)
+                }
+            }
         }
-        popup.onCancel = { }
-        typePickerPopup = popup
-        popup.present(in: self.view)
     }
 
     @objc private func addRecipeTapped() {
@@ -140,30 +200,22 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         detailVC.onRecipeUpdated = { [weak self] in
             self?.viewModel.loadData()
         }
-        detailVC.onRecipeDeleted = { [weak self] in
-            self?.viewModel.loadData()
-        }
         // Store references for transition
         selectedCellImageView = cell.recipeImageView
         // Ensure delegate is set just before push
         navigationController?.delegate = self
-        print("Set navigationController.delegate = self before push to detail")
         navigationController?.pushViewController(detailVC, animated: true)
     }
 }
 
 extension ViewController {
     func navigationController(_ navigationController: UINavigationController, animationControllerFor operation: UINavigationController.Operation, from fromVC: UIViewController, to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        print("[DEBUG] navigationController: \(navigationController)")
-        print("[DEBUG] operation: \(operation.rawValue) (\(operation == .push ? "push" : operation == .pop ? "pop" : "other"))")
-        print("[DEBUG] fromVC: \(type(of: fromVC)), toVC: \(type(of: toVC))")
         if operation == .push,
            let cellImageView = selectedCellImageView,
            let detailVC = toVC as? RecipeDetailViewController {
             detailVC.loadViewIfNeeded()
             detailVC.view.layoutIfNeeded()
             let destImageView = detailVC.imageView
-            print("[DEBUG] Custom animator will be used. cellImageView: \(cellImageView), destImageView: \(destImageView)")
             return RecipeImageTransitionAnimator(originImageView: cellImageView, destinationImageView: destImageView, isPresenting: true)
         } else if operation == .pop,
            let detailVC = fromVC as? RecipeDetailViewController,
@@ -172,13 +224,8 @@ extension ViewController {
             detailVC.loadViewIfNeeded()
             detailVC.view.layoutIfNeeded()
             let originImageView = detailVC.imageView
-            print("[DEBUG] Pop animator: originImageView: \(originImageView), cellImageView: \(cellImageView)")
             return RecipeImageTransitionAnimator(originImageView: originImageView, destinationImageView: cellImageView, isPresenting: false)
         } else {
-            print("[DEBUG] Custom animator NOT used. Reason:")
-            if operation != .push && operation != .pop { print("- Not a push or pop operation") }
-            if selectedCellImageView == nil { print("- selectedCellImageView is nil") }
-            if !(toVC is RecipeDetailViewController) && !(fromVC is RecipeDetailViewController) { print("- Neither toVC nor fromVC is RecipeDetailViewController") }
             return nil
         }
     }

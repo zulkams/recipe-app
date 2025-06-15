@@ -4,4 +4,5 @@ use_frameworks!
 target 'recipe-app' do
   pod 'SnapKit'
   pod 'SDWebImage'
+  pod 'Alamofire'
 end

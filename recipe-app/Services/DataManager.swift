@@ -1,3 +1,10 @@
+//
+//  DataManager.swift
+//  recipe-app
+//
+//  Created by Zul Kamal on 14/06/2025.
+//
+
 import Foundation
 
 class DataManager {
@@ -8,13 +15,55 @@ class DataManager {
     private init() {}
 
     // MARK: - Recipe Types
-    func loadRecipeTypes() -> [RecipeType] {
-        guard let url = Bundle.main.url(forResource: "recipetypes", withExtension: "json"),
-              let data = try? Data(contentsOf: url) else {
-            return []
+    // Path for writable cache (Documents)
+    private var recipeTypesFileURL: URL {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        return docs.appendingPathComponent(recipeTypesFile)
+    }
+    // Path for bundled fallback (Resources)
+    private var bundledRecipeTypesURL: URL? {
+        Bundle.main.url(forResource: "recipetypes", withExtension: "json", subdirectory: "Resources")
+    }
+
+    func loadRecipeTypes(completion: @escaping ([RecipeType]) -> Void) {
+        RecipeTypeAPI.shared.fetchRecipeTypes { [weak self] types in
+            if let self = self, !types.isEmpty {
+                // Save to disk if not present
+                if !FileManager.default.fileExists(atPath: self.recipeTypesFileURL.path) {
+                    self.saveRecipeTypesToDisk(types)
+                }
+                completion(types)
+            } else {
+                // API failed or empty, try to load from disk
+                if let diskTypes = self?.loadRecipeTypesFromDisk(), !diskTypes.isEmpty {
+                    completion(diskTypes)
+                } else {
+                    completion([])
+                }
+            }
         }
-        let types = try? JSONDecoder().decode([RecipeType].self, from: data)
-        return types ?? []
+    }
+
+    private func loadRecipeTypesFromDisk() -> [RecipeType]? {
+        // Try Documents (writable cache) first
+        if FileManager.default.fileExists(atPath: recipeTypesFileURL.path),
+           let data = try? Data(contentsOf: recipeTypesFileURL),
+           let types = try? JSONDecoder().decode([RecipeType].self, from: data) {
+            return types
+        }
+        // If not present, try bundled Resources
+        if let bundledURL = bundledRecipeTypesURL,
+           let data = try? Data(contentsOf: bundledURL),
+           let types = try? JSONDecoder().decode([RecipeType].self, from: data) {
+            return types
+        }
+        return nil
+    }
+
+    private func saveRecipeTypesToDisk(_ types: [RecipeType]) {
+        if let data = try? JSONEncoder().encode(types) {
+            try? data.write(to: recipeTypesFileURL, options: .atomic)
+        }
     }
 
     // MARK: - Recipes
@@ -47,5 +96,9 @@ class DataManager {
         var recipes = loadRecipes()
         recipes.removeAll { $0.id == recipe.id }
         saveRecipes(recipes)
+    }
+    
+    func getRecipe(by id: String) -> Recipe? {
+        return loadRecipes().first(where: { $0.id == id })
     }
 }

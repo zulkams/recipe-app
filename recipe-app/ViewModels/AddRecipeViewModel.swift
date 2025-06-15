@@ -1,3 +1,10 @@
+//
+//  AddRecipeViewModel.swift
+//  recipe-app
+//
+//  Created by Zul Kamal on 14/06/2025.
+//
+
 import Foundation
 import UIKit
 // Import Recipe and RecipeType
@@ -10,23 +17,24 @@ class AddRecipeViewModel {
     var steps: [String] = []
     var recipeTypes: [RecipeType] = []
 
-    init() {
-        recipeTypes = DataManager.shared.loadRecipeTypes()
-        selectedType = recipeTypes.first
+    func loadTypes(completion: @escaping () -> Void) {
+        DataManager.shared.loadRecipeTypes { [weak self] types in
+            self?.recipeTypes = types
+            self?.selectedType = types.first
+            completion()
+        }
     }
+
+    init() {}
 
     func setIngredients(from text: String) {
         ingredients = text.split(separator: ",").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
+
     func setSteps(from text: String) {
         steps = text.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
     }
-    func ingredientsText() -> String {
-        ingredients.joined(separator: ", ")
-    }
-    func stepsText() -> String {
-        steps.joined(separator: "\n")
-    }
+
     func createRecipe() -> Recipe? {
         guard let type = selectedType, !title.isEmpty else { return nil }
         let imageData = image?.jpegData(compressionQuality: 0.8)
@@ -38,5 +46,12 @@ class AddRecipeViewModel {
             ingredients: ingredients,
             steps: steps
         )
+    }
+    
+    func isValid() -> Bool {
+        return !title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !ingredients.isEmpty &&
+            !steps.isEmpty &&
+            selectedType != nil
     }
 }

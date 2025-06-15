@@ -1,3 +1,10 @@
+//
+//  RecipeDetailViewController.swift
+//  recipe-app
+//
+//  Created by Zul Kamal on 14/06/2025.
+//
+
 import UIKit
 import SnapKit
 import SDWebImage
@@ -5,7 +12,6 @@ import SDWebImage
 class RecipeDetailViewController: UIViewController, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     let viewModel: RecipeDetailViewModel
     var onRecipeUpdated: (() -> Void)?
-    var onRecipeDeleted: (() -> Void)?
 
     // UI Components
     let scrollView = UIScrollView()
@@ -15,15 +21,6 @@ class RecipeDetailViewController: UIViewController, UIImagePickerControllerDeleg
     let typeLabel = UILabel()
     let ingredientsField = UITextView()
     let stepsField = UITextView()
-    let saveButton = UIButton(type: .system)
-    let deleteButton = UIButton(type: .system)
-
-    // Editing
-    var isEditingRecipe = false {
-        didSet {
-            updateEditingState()
-        }
-    }
 
     init(recipe: Recipe) {
         self.viewModel = RecipeDetailViewModel(recipe: recipe)
@@ -40,14 +37,9 @@ class RecipeDetailViewController: UIViewController, UIImagePickerControllerDeleg
         view.backgroundColor = .systemBackground
         setupUI()
         displayRecipe()
-        updateEditingState()
     }
 
     func setupUI() {
-        // Enable image tap in edit mode
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(imageTapped))
-        imageView.isUserInteractionEnabled = true
-        imageView.addGestureRecognizer(tapGesture);
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
         scrollView.snp.makeConstraints { $0.edges.equalTo(view.safeAreaLayoutGuide) }
@@ -96,11 +88,11 @@ class RecipeDetailViewController: UIViewController, UIImagePickerControllerDeleg
 
         // Ingredients Card
         let ingredientsCard = UIView()
-        ingredientsCard.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.7)
+        ingredientsCard.backgroundColor = UIColor.systemGray6
         ingredientsCard.layer.cornerRadius = 16
         ingredientsCard.layer.masksToBounds = false
         ingredientsCard.layer.shadowColor = UIColor.black.cgColor
-        ingredientsCard.layer.shadowOpacity = 0.07
+        ingredientsCard.layer.shadowOpacity = 0.15
         ingredientsCard.layer.shadowOffset = CGSize(width: 0, height: 4)
         ingredientsCard.layer.shadowRadius = 10
         contentView.addSubview(ingredientsCard)
@@ -119,20 +111,20 @@ class RecipeDetailViewController: UIViewController, UIImagePickerControllerDeleg
         ingredientsField.backgroundColor = .clear
         ingredientsField.font = UIFont.systemFont(ofSize: 16)
         ingredientsField.textContainerInset = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
+        ingredientsField.isScrollEnabled = false
         ingredientsCard.addSubview(ingredientsField)
         ingredientsField.snp.makeConstraints { make in
             make.top.equalTo(ingredientsLabel.snp.bottom).offset(4)
             make.left.right.bottom.equalToSuperview().inset(12)
-            make.height.equalTo(70)
         }
 
         // Steps Card
         let stepsCard = UIView()
-        stepsCard.backgroundColor = UIColor.secondarySystemBackground.withAlphaComponent(0.7)
+        stepsCard.backgroundColor = UIColor.systemGray6
         stepsCard.layer.cornerRadius = 16
         stepsCard.layer.masksToBounds = false
         stepsCard.layer.shadowColor = UIColor.black.cgColor
-        stepsCard.layer.shadowOpacity = 0.07
+        stepsCard.layer.shadowOpacity = 0.15
         stepsCard.layer.shadowOffset = CGSize(width: 0, height: 4)
         stepsCard.layer.shadowRadius = 10
         contentView.addSubview(stepsCard)
@@ -151,48 +143,11 @@ class RecipeDetailViewController: UIViewController, UIImagePickerControllerDeleg
         stepsField.backgroundColor = .clear
         stepsField.font = UIFont.systemFont(ofSize: 16)
         stepsField.textContainerInset = UIEdgeInsets(top: 8, left: 4, bottom: 8, right: 4)
+        stepsField.isScrollEnabled = false // Allow UITextView to expand
         stepsCard.addSubview(stepsField)
         stepsField.snp.makeConstraints { make in
             make.top.equalTo(stepsLabel.snp.bottom).offset(4)
             make.left.right.bottom.equalToSuperview().inset(12)
-            make.height.equalTo(100)
-        }
-
-        // Save Button
-        saveButton.setTitle("Save Changes", for: .normal)
-        saveButton.titleLabel?.font = .boldSystemFont(ofSize: 18)
-        saveButton.backgroundColor = UIColor.systemBlue
-        saveButton.setTitleColor(.white, for: .normal)
-        saveButton.layer.cornerRadius = 12
-        saveButton.layer.shadowColor = UIColor.systemBlue.cgColor
-        saveButton.layer.shadowOpacity = 0.15
-        saveButton.layer.shadowOffset = CGSize(width: 0, height: 4)
-        saveButton.layer.shadowRadius = 8
-        saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
-        contentView.addSubview(saveButton)
-        saveButton.snp.makeConstraints { make in
-            make.top.equalTo(stepsCard.snp.bottom).offset(32)
-            make.left.right.equalToSuperview().inset(60)
-            make.height.equalTo(48)
-        }
-
-        // Delete Button
-        deleteButton.setTitle("Delete Recipe", for: .normal)
-        deleteButton.setTitleColor(.white, for: .normal)
-        deleteButton.backgroundColor = .systemRed
-        deleteButton.titleLabel?.font = .boldSystemFont(ofSize: 18)
-        deleteButton.layer.cornerRadius = 12
-        deleteButton.layer.shadowColor = UIColor.systemRed.cgColor
-        deleteButton.layer.shadowOpacity = 0.13
-        deleteButton.layer.shadowOffset = CGSize(width: 0, height: 4)
-        deleteButton.layer.shadowRadius = 8
-        deleteButton.addTarget(self, action: #selector(deleteTapped), for: .touchUpInside)
-        contentView.addSubview(deleteButton)
-        deleteButton.snp.makeConstraints { make in
-            make.top.equalTo(saveButton.snp.bottom).offset(16)
-            make.left.right.equalToSuperview().inset(60)
-            make.height.equalTo(44)
-            make.bottom.equalToSuperview().offset(-32)
         }
 
         // Edit button in nav bar
@@ -213,25 +168,6 @@ class RecipeDetailViewController: UIViewController, UIImagePickerControllerDeleg
         stepsField.text = viewModel.stepsText()
     }
 
-    func updateEditingState() {
-        let editing = isEditingRecipe
-        titleField.isUserInteractionEnabled = editing
-        ingredientsField.isEditable = editing
-        stepsField.isEditable = editing
-        saveButton.isHidden = !editing
-        deleteButton.isHidden = !editing
-        navigationItem.rightBarButtonItem?.isEnabled = !editing
-        imageView.alpha = editing ? 0.85 : 1.0
-    }
-
-    @objc func imageTapped() {
-        guard isEditingRecipe else { return }
-        let picker = UIImagePickerController()
-        picker.delegate = self
-        picker.sourceType = .photoLibrary
-        present(picker, animated: true)
-    }
-
     // MARK: - UIImagePickerControllerDelegate
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         picker.dismiss(animated: true)
@@ -244,34 +180,12 @@ class RecipeDetailViewController: UIViewController, UIImagePickerControllerDeleg
     }
 
     @objc func editTapped() {
-        isEditingRecipe = true
-    }
-
-    @objc func saveTapped() {
-        guard let title = titleField.text, !title.isEmpty else {
-            let alert = UIAlertController(title: "Missing Info", message: "Please enter a title.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .default))
-            present(alert, animated: true)
-            return
+        let addVC = AddRecipeViewController(recipeToEdit: viewModel.recipe)
+        addVC.onRecipeEdited = { [weak self] in
+            self?.viewModel.reloadRecipe()
+            self?.displayRecipe()
+            self?.onRecipeUpdated?()
         }
-        viewModel.title = title
-        viewModel.setIngredients(from: ingredientsField.text)
-        viewModel.setSteps(from: stepsField.text)
-        viewModel.image = imageView.image
-        viewModel.updateRecipe()
-        isEditingRecipe = false
-        onRecipeUpdated?()
-    }
-
-    @objc func deleteTapped() {
-        let alert = UIAlertController(title: "Delete Recipe", message: "Are you sure you want to delete this recipe?", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        alert.addAction(UIAlertAction(title: "Delete", style: .destructive) { [weak self] _ in
-            guard let self = self else { return }
-            self.viewModel.deleteRecipe()
-            self.onRecipeDeleted?()
-            self.navigationController?.popViewController(animated: true)
-        })
-        present(alert, animated: true)
+        navigationController?.pushViewController(addVC, animated: true)
     }
 }
