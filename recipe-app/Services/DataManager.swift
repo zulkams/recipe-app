@@ -34,30 +34,9 @@ class DataManager {
                 }
                 completion(types)
             } else {
-                // API failed or empty, try to load from disk
-                if let diskTypes = self?.loadRecipeTypesFromDisk(), !diskTypes.isEmpty {
-                    completion(diskTypes)
-                } else {
-                    completion([])
-                }
+                completion([])
             }
         }
-    }
-
-    private func loadRecipeTypesFromDisk() -> [RecipeType]? {
-        // Try Documents (writable cache) first
-        if FileManager.default.fileExists(atPath: recipeTypesFileURL.path),
-           let data = try? Data(contentsOf: recipeTypesFileURL),
-           let types = try? JSONDecoder().decode([RecipeType].self, from: data) {
-            return types
-        }
-        // If not present, try bundled Resources
-        if let bundledURL = bundledRecipeTypesURL,
-           let data = try? Data(contentsOf: bundledURL),
-           let types = try? JSONDecoder().decode([RecipeType].self, from: data) {
-            return types
-        }
-        return nil
     }
 
     private func saveRecipeTypesToDisk(_ types: [RecipeType]) {
