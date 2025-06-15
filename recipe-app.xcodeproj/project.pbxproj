@@ -24,6 +24,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2E3218EC2DFE816B00D97213 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E3218F02DFE817100D97213 /* SDWebImage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SDWebImage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E3218F32DFE817900D97213 /* SnapKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SnapKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E3218F62DFE818800D97213 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E3218F72DFE818800D97213 /* SDWebImage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SDWebImage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E3218F82DFE818800D97213 /* SnapKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SnapKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E3219002DFE819000D97213 /* Alamofire.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Alamofire.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E3219012DFE819000D97213 /* SDWebImage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SDWebImage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		2E3219022DFE819000D97213 /* SnapKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = SnapKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E9FB3912DFDBE4600AE03E7 /* recipe-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "recipe-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E9FB3AA2DFDBE4800AE03E7 /* recipe-appTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "recipe-appTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2E9FB3B42DFDBE4800AE03E7 /* recipe-appUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "recipe-appUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -50,11 +59,15 @@
 		};
 		2E9FB3AD2DFDBE4800AE03E7 /* recipe-appTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "recipe-appTests";
 			sourceTree = "<group>";
 		};
 		2E9FB3B72DFDBE4800AE03E7 /* recipe-appUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = "recipe-appUITests";
 			sourceTree = "<group>";
 		};
@@ -85,6 +98,29 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		18A654D6801A154DEC0D79B2 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
+		2622886A394779EB164B055A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2E3219002DFE819000D97213 /* Alamofire.framework */,
+				2E3219012DFE819000D97213 /* SDWebImage.framework */,
+				2E3219022DFE819000D97213 /* SnapKit.framework */,
+				2E3218F62DFE818800D97213 /* Alamofire.framework */,
+				2E3218F72DFE818800D97213 /* SDWebImage.framework */,
+				2E3218F82DFE818800D97213 /* SnapKit.framework */,
+				2E3218F32DFE817900D97213 /* SnapKit.framework */,
+				2E3218F02DFE817100D97213 /* SDWebImage.framework */,
+				2E3218EC2DFE816B00D97213 /* Alamofire.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		2E9FB3882DFDBE4600AE03E7 = {
 			isa = PBXGroup;
 			children = (
@@ -92,6 +128,8 @@
 				2E9FB3AD2DFDBE4800AE03E7 /* recipe-appTests */,
 				2E9FB3B72DFDBE4800AE03E7 /* recipe-appUITests */,
 				2E9FB3922DFDBE4600AE03E7 /* Products */,
+				18A654D6801A154DEC0D79B2 /* Pods */,
+				2622886A394779EB164B055A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -124,8 +162,6 @@
 				2E9FB3932DFDBE4600AE03E7 /* recipe-app */,
 			);
 			name = "recipe-app";
-			packageProductDependencies = (
-			);
 			productName = "recipe-app";
 			productReference = 2E9FB3912DFDBE4600AE03E7 /* recipe-app.app */;
 			productType = "com.apple.product-type.application";
@@ -147,8 +183,6 @@
 				2E9FB3AD2DFDBE4800AE03E7 /* recipe-appTests */,
 			);
 			name = "recipe-appTests";
-			packageProductDependencies = (
-			);
 			productName = "recipe-appTests";
 			productReference = 2E9FB3AA2DFDBE4800AE03E7 /* recipe-appTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -170,8 +204,6 @@
 				2E9FB3B72DFDBE4800AE03E7 /* recipe-appUITests */,
 			);
 			name = "recipe-appUITests";
-			packageProductDependencies = (
-			);
 			productName = "recipe-appUITests";
 			productReference = 2E9FB3B42DFDBE4800AE03E7 /* recipe-appUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
@@ -290,6 +322,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LKX6LDMRFG;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "recipe-app/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -318,6 +351,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = LKX6LDMRFG;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "recipe-app/Info.plist";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;

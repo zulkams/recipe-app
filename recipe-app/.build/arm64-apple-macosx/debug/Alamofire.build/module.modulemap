@@ -1,0 +1,4 @@
+module Alamofire {
+    header "/Users/zulkams/Desktop/Personal/recipe-app/recipe-app/.build/arm64-apple-macosx/debug/Alamofire.build/Alamofire-Swift.h"
+    requires objc
+}
