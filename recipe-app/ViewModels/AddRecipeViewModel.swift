@@ -17,6 +17,13 @@ class AddRecipeViewModel {
     var steps: [String] = []
     var recipeTypes: [RecipeType] = []
 
+    init(recipeTypes: [RecipeType] = []) {
+        self.recipeTypes = recipeTypes
+        if let first = recipeTypes.first {
+            self.selectedType = first
+        }
+    }
+
     func loadTypes(completion: @escaping () -> Void) {
         DataManager.shared.loadRecipeTypes { [weak self] types in
             self?.recipeTypes = types

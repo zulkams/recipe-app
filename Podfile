@@ -6,3 +6,18 @@ target 'recipe-app' do
   pod 'SDWebImage'
   pod 'Alamofire'
 end
+
+target 'recipe-appTests' do
+  inherit! :search_paths
+  pod 'Alamofire'
+  pod 'SnapKit'
+  pod 'SDWebImage'
+end
+
+target 'recipe-appUITests' do
+  inherit! :search_paths
+  pod 'Alamofire'
+  pod 'SnapKit'
+  pod 'SDWebImage'
+end
+

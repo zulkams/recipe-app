@@ -150,7 +150,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate {
     }
 
     @objc private func addRecipeTapped() {
-        let addVC = AddRecipeViewController()
+        let addVC = AddRecipeViewController(preloadedTypes: viewModel.recipeTypes)
         addVC.onRecipeAdded = { [weak self] in
             self?.viewModel.loadData()
         }
@@ -197,6 +197,7 @@ extension ViewController: UITableViewDataSource, UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         let recipe = viewModel.filteredRecipes[indexPath.row]
         let detailVC = RecipeDetailViewController(recipe: recipe)
+        detailVC.preloadedTypes = viewModel.recipeTypes
         detailVC.onRecipeUpdated = { [weak self] in
             self?.viewModel.loadData()
         }

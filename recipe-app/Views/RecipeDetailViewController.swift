@@ -179,8 +179,10 @@ class RecipeDetailViewController: UIViewController, UIImagePickerControllerDeleg
         picker.dismiss(animated: true)
     }
 
+    var preloadedTypes: [RecipeType] = []
+
     @objc func editTapped() {
-        let addVC = AddRecipeViewController(recipeToEdit: viewModel.recipe)
+        let addVC = AddRecipeViewController(recipeToEdit: viewModel.recipe, preloadedTypes: preloadedTypes)
         addVC.onRecipeEdited = { [weak self] in
             self?.viewModel.reloadRecipe()
             self?.displayRecipe()

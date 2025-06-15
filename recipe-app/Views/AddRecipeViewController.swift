@@ -34,19 +34,58 @@ class AddRecipeViewController: UIViewController, UIImagePickerControllerDelegate
     let saveButton = UIButton(type: .system)
 
     // ViewModel
-    let viewModel = AddRecipeViewModel()
+    let viewModel: AddRecipeViewModel
     var onRecipeAdded: (() -> Void)?
     private let loadingIndicator = UIActivityIndicatorView(style: .large)
 
-    convenience init(recipeToEdit: Recipe? = nil) {
-        self.init(nibName: nil, bundle: nil)
+    init(recipeToEdit: Recipe? = nil, preloadedTypes: [RecipeType] = []) {
         self.editingRecipe = recipeToEdit
+        self.viewModel = AddRecipeViewModel(recipeTypes: preloadedTypes)
+        super.init(nibName: nil, bundle: nil)
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         prefillIfNeeded()
+        // Enable keyboard dismissal on tap outside
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tap.cancelsTouchesInView = false
+        view.addGestureRecognizer(tap)
+        // Enable keyboard dismissal on scroll
+
+        // Only load types if not already preloaded
+        if viewModel.recipeTypes.isEmpty {
+            isTypeLoading = true
+            typePicker.isHidden = true
+            typePickerSpinner.isHidden = false
+            typePickerSpinner.startAnimating()
+            viewModel.loadTypes { [weak self] in
+                DispatchQueue.main.async {
+                    self?.isTypeLoading = false
+                    self?.typePickerSpinner.stopAnimating()
+                    self?.typePicker.isHidden = false
+                    self?.typePickerSpinner.isHidden = true
+                    self?.typePicker.reloadAllComponents()
+                }
+            }
+        } else {
+            isTypeLoading = false
+            typePicker.isHidden = false
+            typePickerSpinner.isHidden = true
+            typePickerSpinner.stopAnimating()
+            typePicker.reloadAllComponents()
+        }
+    }
+
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+
+        scrollView.keyboardDismissMode = .onDrag
         if viewModel.recipeTypes.isEmpty {
             isTypeLoading = true
             typePicker.isHidden = true
