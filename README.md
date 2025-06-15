@@ -2,6 +2,9 @@
 
 A simple iOS app to manage and add recipes.
 
+## App Credentials (username:pwd)
+- demo:password123
+
 ## Requirements
 - Xcode 13 or later
 - iOS 14.0 or later
@@ -66,6 +69,3 @@ A simple iOS app to manage and add recipes.
 ## Notes
 - Make sure to run `pod install` after cloning or when dependencies change.
 - If you encounter issues, try running `pod update`.
-
-## App Credentials (username:pwd)
-- demo:password123
