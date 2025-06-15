@@ -62,8 +62,6 @@ A simple iOS app to manage and add recipes.
 
 ## Project Structure
 - `recipe-app/` - Main source code (MVVM pattern)
-- `recipe-appTests/` - Unit tests
-- `recipe-appUITests/` - UI tests
 - `Pods/` - CocoaPods dependencies
 
 ## Notes
